@@ -9,6 +9,6 @@
   "homepage": "https://github.com/winrey/claude-code-toolkit",
   "repository": "https://github.com/winrey/claude-code-toolkit",
   "license": "MIT",
-  "keywords": ["skills", "code-review", "review-loop"],
+  "keywords": ["skills", "code-review", "review-loop", "test-completeness", "testing"],
   "skills": "./skills/"
 }
