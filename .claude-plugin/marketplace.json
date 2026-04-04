@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "winrey-toolkit",
-      "source": ".",
+      "source": "./plugins/winrey-toolkit",
       "description": "Winrey's personal Claude Code skills including review-loop",
       "version": "0.1.0",
       "keywords": ["skills", "code-review", "review-loop"]
