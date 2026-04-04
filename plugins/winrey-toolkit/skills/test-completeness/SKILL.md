@@ -62,6 +62,7 @@ digraph test_completeness {
     "Any gaps found?" -> "PASS" [label="no"];
     "Any gaps found?" -> "Interactive mode?" [label="yes"];
     "Interactive mode?" -> "Output verdict\nand return" [label="no"];
+    "Output verdict\nand return" -> "PASS";
     "Interactive mode?" -> "Propose remediation\noptions to user" [label="yes"];
     "Propose remediation\noptions to user" -> "User selects\ngaps to fix";
     "User selects\ngaps to fix" -> "Generate missing\ntest files";
@@ -122,15 +123,16 @@ Layers detected: unit, integration
 
 **Diff mode (`scope=diff`):**
 ```bash
-git diff --name-only $(git merge-base HEAD origin/main) HEAD \
+git diff --name-only $(git merge-base HEAD <base>) HEAD \
   | grep -v test | grep -v spec | grep -E '\.(ts|js|py|go|rs)$'
 ```
+Replace `<base>` with the resolved `base` parameter (default: `main`). Example with default: `$(git merge-base HEAD main)`.
 Filter out: test files, spec files, generated files, config files, type-only files.
 
 **Full mode (`scope=full`):**
 Collect all source files matching the language extension, excluding test files and vendor directories.
 
-**If no target files after filtering:** Report "No source files in scope" and exit. (See Edge Cases.)
+**If no target files after filtering:** Report "No source files in scope" and exit with PASS. (See Edge Cases.)
 
 ### 2b: Run Test Suite
 
@@ -168,7 +170,7 @@ Store as structured data keyed by file path for use in the auditor prompt.
 
 ## Step 3: Dispatch Scenario Auditor
 
-Fill the `auditor-prompt.md` template with the collected data and dispatch via Agent tool.
+Fill the `auditor-prompt.md` template with the collected data and dispatch via Agent tool. Read the `auditor-prompt.md` template from this skill's directory (`plugins/winrey-toolkit/skills/test-completeness/auditor-prompt.md`).
 
 **Placeholder mapping:**
 
@@ -234,7 +236,7 @@ Present gaps grouped by file, and offer the user choices:
 I found X gaps across Y files. What would you like to do?
 
   a) Fix ALL gaps — generate tests for every Critical and Important issue
-  b) Fix Critical only — generate tests for zero-coverage and zero-test functions
+  b) Fix Critical only — generate tests for every Critical issue
   c) Fix by file — I'll list files; pick which ones to address
   d) Fix by dimension — choose which dimensions to fix (e.g., "fix all bad case gaps")
   e) Skip — exit without generating tests (issues remain on record)
@@ -268,10 +270,13 @@ Wait for user input before proceeding. After user selects:
 
 After generating tests, re-run the full pipeline (Steps 2-4) to verify the gaps are closed.
 
+**Round counter:** The round counter starts at 1 for the first verification run after tests are generated. The initial audit performed in Steps 2-4 is NOT counted as a round. The counter increments by 1 after each verification-fix cycle.
+
 **Loop structure:**
 - Re-run tests + collect new coverage
 - Re-dispatch Scenario Auditor with updated file list and coverage
 - Merge and present new report, highlighting what changed
+- Check the round counter after re-running tests and before proposing remediation — if the counter has reached 5 and gaps remain, stop and present the max-rounds summary instead of proposing another remediation cycle
 
 **Loop summary format:**
 ```
