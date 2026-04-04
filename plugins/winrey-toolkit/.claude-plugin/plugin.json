@@ -6,8 +6,8 @@
   "author": {
     "name": "Winrey"
   },
-  "homepage": "https://github.com/winrey/winrey-toolkit",
-  "repository": "https://github.com/winrey/winrey-toolkit",
+  "homepage": "https://github.com/winrey/claude-code-toolkit",
+  "repository": "https://github.com/winrey/claude-code-toolkit",
   "license": "MIT",
   "keywords": ["skills", "code-review", "review-loop"],
   "skills": "./skills/"
