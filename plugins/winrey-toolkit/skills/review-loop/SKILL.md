@@ -104,6 +104,7 @@ For each reviewer, fill `reviewer-prompt.md` template and dispatch via Agent too
 - Each reviewer is a **separate** Agent call — they run in parallel
 - Provide only: round number, diff range, description, focus areas, project conventions
 - **Never** provide: prior review results, fix history, controller opinions
+- Before dispatching, check for locally installed review skills (e.g. `requesting-code-review`, `code-reviewer` agents) and reference their output format conventions to keep reviewer output consistent with project norms
 
 **You MUST dispatch subagents. Do NOT review the code yourself.** Even for 1 reviewer on a small diff, dispatch a subagent. The controller's job is to coordinate, screen, and fix — not to review. Reviewing your own code (or code you just read) defeats the isolation principle. If you catch yourself thinking "I'll just review it myself, it's small" — that's the exact rationalization this rule prevents.
 
@@ -122,16 +123,38 @@ For each issue reported by any reviewer:
 
 ## Step 4: Report Round Summary to User
 
-After screening, report concisely:
+After screening, report with full issue details:
 
 ```
 ## Round N Review
+
+### Issue Details
+
+| # | Level | Description | Decision | Reason |
+|---|-------|-------------|----------|--------|
+| 1 | Critical | ... | Fix | ... |
+| 2 | Important | ... | Fix | ... |
+| 3 | Important | ... | Rejected | False positive: ... |
+| 4 | Minor | ... | Verified → Fix | Verifier confirmed |
+| 5 | Minor | ... | Skipped | Non-blocking, cosmetic |
+
+Decision values: Fix / Rejected / Verified → Fix / Verified → Rejected / Skipped
+
+### Summary
 - Issues found: X (Critical: a, Important: b, Minor: c)
-- Verification: confirmed Y, excluded Z false positives
-- Fixed: W
-- Remaining Minor (non-blocking): list
+- Confirmed to fix: Y, Rejected: Z
 - Status: continuing / passed / paused at limit
+
+### Convergence Trend (Round 2+)
+- Round 1: 5 issues (C:1 I:3 M:1) → Round 2: 2 issues (C:0 I:1 M:1) → ...
+- Trend: converging / stable / diverging
+- If diverging or stable after 2+ rounds: note possible cause and suggest strategy adjustment
 ```
+
+**Convergence rules:**
+- **Converging**: Important+ count strictly decreasing across rounds → continue
+- **Stable**: Important+ count unchanged for 2 consecutive rounds → flag to user, suggest reviewing fix quality or adjusting strategy
+- **Diverging**: Important+ count increasing → stop and ask user before continuing
 
 If no Important+ issues → report and exit (PASS).
 
@@ -179,10 +202,16 @@ Both paths return results → merge and deduplicate → back to Step 3.
 
 ```
 ## Review Loop Result
+
+### Convergence Summary
+- Round 1: X issues (C:a I:b M:c) → Round 2: Y issues (C:d I:e M:f) → ...
+- Trend: converging / stable / diverging
+- Important+ trajectory: [count per round, e.g. 4 → 2 → 0]
+
+### Result
 - Total rounds: N
 - Status: Passed / User terminated
-- Issues per round: Round 1: X, Round 2: Y, ...
-- Total issues fixed: Z
+- Total issues found: X, Total fixed: Y, Total rejected: Z
 - Remaining Minor issues: (list, optional fix)
 ```
 
