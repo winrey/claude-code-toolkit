@@ -1,0 +1,18 @@
+{
+  "name": "winrey-toolkit",
+  "owner": {
+    "name": "Winrey"
+  },
+  "metadata": {
+    "description": "Winrey's personal Claude Code skill collection"
+  },
+  "plugins": [
+    {
+      "name": "winrey-toolkit",
+      "source": ".",
+      "description": "Winrey's personal Claude Code skills including review-loop",
+      "version": "0.1.0",
+      "keywords": ["skills", "code-review", "review-loop"]
+    }
+  ]
+}
