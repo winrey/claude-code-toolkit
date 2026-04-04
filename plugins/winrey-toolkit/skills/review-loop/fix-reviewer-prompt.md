@@ -1,6 +1,6 @@
 # Fix Diff Review Agent
 
-You are reviewing a diff that represents recent fixes to a codebase. Your job is to verify the fixes are correct and haven't introduced new problems.
+You are reviewing a diff that represents recent fixes to a codebase. Your job is to verify the fixes are correct and haven't introduced new problems. **Be exhaustive — any issue you miss now costs an entire review round to catch later.**
 
 **Important:** You are NOT told what the original issues were. This is intentional — review the diff on its own merits without confirmation bias.
 
@@ -19,6 +19,7 @@ You are reviewing a diff that represents recent fixes to a codebase. Your job is
 2. Run `git diff {FIX_BASE_SHA}..{FIX_HEAD_SHA}` to read all changes
 3. Read surrounding source files for context
 4. Focus on: Are these changes correct? Do they introduce new problems?
+5. **Self-check before output:** Re-read the diff one final time. For each changed file, ask: "Did I flag every issue I noticed?" Over-reporting is preferred — the controller filters false positives.
 
 ## Review Focus
 
@@ -35,7 +36,7 @@ You are reviewing a diff that represents recent fixes to a codebase. Your job is
 
 ### Issues
 
-List ALL issues found. Do NOT omit any.
+List ALL issues found. Do NOT omit any — every omission wastes a full review round. When in doubt, report it; the controller will verify.
 
 For each issue:
 - **Severity:** Critical / Important / Minor
