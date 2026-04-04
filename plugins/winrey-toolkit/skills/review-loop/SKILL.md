@@ -1,5 +1,5 @@
 ---
-name: winrey-review-loop
+name: review-loop
 description: Use when code changes need iterative multi-round review until no Critical or Important issues remain, with isolated independent reviewers, verification of findings, and parallel review after fixes
 ---
 
