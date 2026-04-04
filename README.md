@@ -1,14 +1,14 @@
-# cc-skill-review-loop
+# winrey-toolkit
 
-A [Claude Code](https://claude.ai/code) skill for iterative multi-round code review using isolated subagents.
+Winrey's personal [Claude Code](https://claude.ai/code) plugin — a collection of custom skills.
 
-## What it does
+## Skills
+
+### winrey-review-loop
+
+Iterative multi-round code review with isolated subagents.
 
 Dispatches independent reviewer subagents → screens and verifies findings → fixes confirmed issues → parallel dual-path re-review (fix diff + full review) → repeats until no Critical or Important issues remain.
-
-Each reviewer is fully isolated: no prior review conclusions, no conversation history, no knowledge of previous fixes.
-
-## Key features
 
 - **Isolated subagent reviewers** — each round starts fresh, no anchoring on prior findings
 - **Verification layer** — uncertain findings are independently verified before fixing
@@ -19,30 +19,15 @@ Each reviewer is fully isolated: no prior review conclusions, no conversation hi
 
 ## Installation
 
-Copy the skill files to your Claude Code skills directory:
-
 ```bash
-# Clone
-git clone https://github.com/winrey/cc-skill-review-loop.git
-
-# Copy to Claude Code skills directory
-cp -r cc-skill-review-loop ~/.claude/skills/review-loop
+claude plugin install /path/to/winrey-toolkit
 ```
 
-Or manually copy the 4 files into `~/.claude/skills/review-loop/` (or any name you prefer).
+Or from GitHub:
 
-## Files
-
-| File | Purpose |
-|------|---------|
-| `SKILL.md` | Main skill — flow, rules, decision logic |
-| `reviewer-prompt.md` | Full reviewer subagent template |
-| `fix-reviewer-prompt.md` | Fix diff reviewer subagent template |
-| `verifier-prompt.md` | Issue verifier subagent template |
-
-## Usage
-
-Once installed, Claude Code will automatically discover the skill. You can invoke it with `/review-loop` (or whatever you named the directory), or it will be suggested when iterative code review is appropriate.
+```bash
+claude plugin install winrey/winrey-toolkit
+```
 
 ## License
 
