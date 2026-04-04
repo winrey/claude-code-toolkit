@@ -1,10 +1,10 @@
-# winrey-toolkit
+# claude-code-toolkit
 
 Winrey's personal [Claude Code](https://claude.ai/code) plugin — a collection of custom skills.
 
 ## Skills
 
-### winrey-review-loop
+### review-loop
 
 Iterative multi-round code review with isolated subagents.
 
@@ -19,14 +19,17 @@ Dispatches independent reviewer subagents → screens and verifies findings → 
 
 ## Installation
 
+Add the marketplace and install:
+
 ```bash
-claude plugin install /path/to/winrey-toolkit
+claude plugin marketplace add winrey/claude-code-toolkit
+claude plugin install winrey-toolkit
 ```
 
-Or from GitHub:
+To update later:
 
 ```bash
-claude plugin install winrey/winrey-toolkit
+claude plugin update winrey-toolkit
 ```
 
 ## License
