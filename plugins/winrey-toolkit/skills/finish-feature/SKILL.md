@@ -260,7 +260,22 @@ Invoke skill `winrey-toolkit:review-loop` with:
 | DESCRIPTION | From spec summary or PR body; fallback to `git log --oneline` summary |
 | PLAN_OR_REQUIREMENTS | Read SPEC_PATH file contents and pass as text (if available) |
 
-The skill handles multi-round iteration, verification, and fixing internally. Controller passes parameters and waits for the result. Do not interfere with review-loop's internal process.
+### How review-loop works (do not alter this process)
+
+The skill runs a multi-round iterative review with these key mechanics:
+
+1. **Each round** dispatches 1~N fully isolated reviewer subagents (no knowledge of prior rounds)
+2. **Controller screens** each issue: clearly valid → fix, clearly false → reject with reason, uncertain → dispatch verifier subagent
+3. **After fixes**, the next round runs **dual-path parallel review**:
+   - Path A: fix-diff reviewer (reviews only the fix commits, unaware of original issues)
+   - Path B: 1~N fresh independent reviewers (review full BASE..HEAD, fully isolated from all prior rounds)
+4. **Every round**, the controller reports to the user:
+   - Per-issue detail table: severity, description, decision, reasoning
+   - Summary: issues found, confirmed to fix, rejected
+   - Convergence trend (from round 2+): converging / stable / diverging
+5. **Terminates** when no Critical or Important issues remain, or MAX_ROUNDS reached
+
+The controller passes parameters and lets review-loop drive. Do not interfere with its internal round logic, but the per-round summaries and convergence reports MUST be visible to the user (not hidden).
 
 After completion → push, update PR body checkbox.
 
