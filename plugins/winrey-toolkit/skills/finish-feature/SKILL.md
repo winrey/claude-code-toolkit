@@ -65,7 +65,7 @@ digraph finish_feature {
 }
 ```
 
-Skipped steps are bypassed. If `automation=checkpoint`, a pause is inserted after every step.
+Skipped steps are bypassed. If `automation=checkpoint`, a pause is inserted after every step. If `automation=full`, a sensitive-decisions report is generated at the end.
 
 ## Parameters
 
@@ -130,9 +130,12 @@ Use `AskUserQuestion`:
 ```
 Automation level:
 
- (a) Full auto — only pauses on errors or trade-off decisions
- (b) Confirm — pauses at key decisions (fix proposals, review disputes)
- (c) Checkpoint — pauses after every step with summary
+ (a) Full auto — AI handles everything autonomously, including decisions,
+     error resolution, and trade-offs. Generates a markdown report of
+     sensitive decisions at the end for your review.
+ (b) Confirm — pauses on errors, trade-off decisions, or when a review
+     agent and the controller disagree on an opinion.
+ (c) Checkpoint — pauses after every step with summary.
 ```
 
 ## Review Opinion Handling Principle
@@ -146,10 +149,14 @@ For each review opinion:
   │    ├─ Do NOT fix
   │    ├─ Reply with explanation (PR comment for Copilot, summary for Codex)
   │    ├─ Resolve the conversation where applicable
+  │    ├─ automation=full → record decision in final report, do not pause
   │    └─ automation=confirm/checkpoint → show user before declining
   └─ Uncertain →
-       ├─ automation=full → dispatch verifier (review-loop) or judge conservatively
-       ├─ automation=confirm/checkpoint → show user with analysis, let them decide
+       ├─ automation=full → analyze pros/cons, make a judgment call, record
+       │    reasoning in final report (dispatch verifier if needed, but do not
+       │    pause for user input)
+       ├─ automation=confirm → show user with analysis, let them decide
+       ├─ automation=checkpoint → show user with analysis, let them decide
        └─ After judgment → treat as valid or invalid
 ```
 
@@ -349,7 +356,8 @@ For each Codex opinion, apply the **Review Opinion Handling Principle**:
 - Read relevant code context independently before judging
 - Valid → fix code
 - Invalid → record rejection reason in summary; if automation=confirm/checkpoint → show user
-- Uncertain + automation=full → dispatch verifier subagent to confirm, or lean conservative (fix); otherwise → ask user
+- Uncertain + automation=full → analyze independently, make judgment call, record reasoning in final report (do not pause)
+- Uncertain + automation=confirm/checkpoint → show user with analysis, let them decide
 
 After fixes → push, update PR body checkbox.
 
@@ -409,7 +417,7 @@ git merge --no-commit --no-ff origin/TARGET_BRANCH
 
 - No conflicts → `git merge --abort`, continue
 - Conflicts → show conflicting files
-  - automation=full → attempt auto-resolve with `git merge`; if resolved, commit with standard merge message and report resolution to user; if unresolvable, report and ask user
+  - automation=full → attempt auto-resolve with `git merge`; if resolved, commit with standard merge message and record in final report; if unresolvable, report and ask user
   - automation=confirm/checkpoint → show both sides, ask user for strategy
   - After resolution → commit and push
 
@@ -427,6 +435,7 @@ git log origin/TARGET_BRANCH --not HEAD --oneline
   - No overlap → safe, continue
   - Overlap with no functional impact (formatting, comments) → report, continue
   - Functional impact → report specifics + suggestions
+    - automation=full → analyze impact, adapt code if safe, record decision in final report; if risky, ask user
     - automation=confirm/checkpoint → ask user if adaptation needed
 
 After check → update PR body checkbox.
@@ -476,7 +485,19 @@ After all steps complete:
 PR Status: Draft removed, all checks passed, ready for merge.
 ```
 
-4. **Memory update:** if first time confirming target branch for this project, save to memory
+4. **Sensitive decisions report (automation=full only):** Output a separate report listing every autonomous decision made during the pipeline — declined review opinions, uncertain calls, conflict resolutions, trade-off choices. For each decision, include: what the decision was, the reasoning/pros-cons analysis, and which step it occurred in. This allows the user to audit AI judgment after the fact.
+
+```
+## Sensitive Decisions Report (Full Auto)
+
+| # | Step | Decision | Reasoning |
+|---|------|----------|-----------|
+| 1 | 3. review-loop | Declined reviewer suggestion to extract helper | One-time operation, abstraction adds complexity without reuse benefit |
+| 2 | 5. Copilot | Fixed null check despite low severity | Defensive — edge case possible in production |
+| 3 | 8. Conflicts | Auto-resolved merge in config.ts | Only whitespace/formatting difference, no functional change |
+```
+
+5. **Memory update:** if first time confirming target branch for this project, save to memory
 
 ## Error Recovery
 
